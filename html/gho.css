@@ -1,0 +1,27 @@
+body {
+    background-color: #111;
+}
+a, a:hover, a:focus {
+    color: #e74c3c;
+}
+.footer {
+    margin-top: 21px;
+}
+@media (min-width:768px) {
+    .container {
+        width: 750px;
+    }
+}
+.jumbotron {
+    background-image: url(bg.png);
+    background-size: cover;
+    margin-bottom: 10px;
+}
+.nav {
+    margin-bottom: 20px;
+}
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:hover,
+.nav-pills > li.active > a:focus {
+    background-color: #e74c3c;
+}

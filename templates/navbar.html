@@ -1,0 +1,27 @@
+<div class="container lead">
+    <ul class="nav nav-pills">
+{ if( $page eq 'index' ) {
+    '<li class="active"><a href="index.html">Om <span class="sr-only">(current)</span></a></li>'
+}
+else {
+    '<li><a href="index.html">Om</a></li>'
+} }
+{ if( $page eq 'historik' ) {
+    '<li class="active"><a href="historik.html">Historik <span class="sr-only">(current)</span></a></li>'
+}
+else {
+    '<li><a href="historik.html">Historik</a></li>'
+} }
+{ if( $page eq 'hjonforskning'
+    or $page eq 'hybblehjonets-historia-del-i'
+    or $page eq 'hybblehjonets-historia-del-ii'
+    or $page eq 'hybblehjonets-historia-del-iii'
+    or $page eq 'en-tidig-hybbletillskyndare'
+) {
+    '<li class="active"><a href="hjonforskning.html">Hjonforskning <span class="sr-only">(current)</span></a></li>'
+}
+else {
+    '<li><a href="hjonforskning.html">Hjonforskning</a></li>'
+} }
+    </ul>
+</div>

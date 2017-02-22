@@ -1,0 +1,149 @@
+#!/usr/bin/env perl
+
+use common::sense;
+
+use Getopt::Long;
+use YAML;
+use Text::Template;
+use HTML::Entities;
+
+my $compact = 1;
+my $force = 0;
+
+GetOptions(
+    'compact!' => \$compact,
+    'force!' => \$force,
+) or die;
+
+my ( %built, %template, $page );
+
+opendir( DATA, 'data' ) or die;
+while ( my $entry = readdir(DATA) ) {
+    unless ( $entry =~ /\.yaml$/o ) {
+        next;
+    }
+
+    say 'loading data ' . $entry;
+    my $yaml = YAML::LoadFile( 'data/' . $entry );
+
+    unless ( ref($yaml) eq 'HASH' ) {
+        die $entry . ' did not contain a hash';
+    }
+
+    foreach ( keys %$yaml ) {
+        $template{ $_ } = $yaml->{ $_ };
+    }
+}
+closedir( DATA );
+
+if ( scalar @ARGV ) {
+    foreach my $entry ( @ARGV ) {
+        unless ( $entry =~ /\.html$/o ) {
+            next;
+        }
+        $entry =~ s/.*\///o;
+        $page = $entry;
+        $page =~ s/\.html$//o;
+        my $in = 'pages/' . $entry;
+        my $out = 'html/' . $entry;
+        unless ( -f $in ) {
+            next;
+        }
+
+        build( $in, $out ) or die;
+    }
+}
+else {
+    opendir( PAGES, 'pages' ) or die;
+    while ( my $entry = readdir(PAGES) ) {
+        unless ( $entry =~ /\.html$/o ) {
+            next;
+        }
+        my $file = $entry;
+        $page = $entry;
+        $page =~ s/\.html$//o;
+        my $in = 'pages/' . $entry;
+        my $out = 'html/' . $entry;
+        unless ( -f $in ) {
+            next;
+        }
+
+        build( $in, $out ) or die;
+        $built{ $page } = 1;
+    }
+    closedir( PAGES );
+
+    opendir( HTML, 'html' ) or die;
+    while ( my $entry = readdir(HTML) ) {
+        unless ( $entry =~ /\.html$/o ) {
+            next;
+        }
+
+        $entry =~ s/\.html$//o;
+
+        unless ( $built{$entry} ) {
+            say 'removing html/' . $entry . '.html';
+            unlink( 'html/' . $entry . '.html' ) or die;
+        }
+    }
+    closedir( HTML );
+}
+
+exit;
+
+sub build {
+    my ( $in, $out ) = @_;
+
+    say "build $in => $out";
+
+    open( IN, '<:encoding(UTF-8)', $in ) or die;
+
+    my $template = Text::Template->new( TYPE => 'FILEHANDLE', SOURCE => \*IN )
+        or die 'Template error: ' . $Text::Template::ERROR;
+
+    open( OUT, '>:encoding(UTF-8)', $out ) or die;
+
+    my $text = $template->fill_in( HASH => {
+        %template,
+        page => $page,
+        include => \&include,
+        encode => \&encode_entities,
+    } );
+
+    if ( $compact ) {
+        $text =~ s/^\s+//o;
+        $text =~ s/\s+$//o;
+        $text =~ s/\s+/ /go;
+        $text =~ s/[\r\n]+/ /o;
+    }
+
+    print OUT $text;
+
+    close( OUT );
+    close( IN );
+
+    return 1;
+}
+
+sub include {
+    my ( $file, %args ) = @_;
+
+    $file = 'templates/' . $file;
+    say "  template $file";
+
+    my $fh;
+    open( $fh, '<:encoding(UTF-8)', $file ) or die;
+
+    my $template = Text::Template->new( TYPE => 'FILEHANDLE', SOURCE => $fh )
+        or die 'Template error: ' . $Text::Template::ERROR;
+
+    my $ret = $template->fill_in( HASH => {
+        %args ? %args : %template,
+        page => $page,
+        include => \&include,
+        encode => \&encode_entities,
+    } );
+
+    close( $fh );
+    return $ret;
+}
