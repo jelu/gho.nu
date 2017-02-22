@@ -2,7 +2,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    server_name gho.nu *.gho.nu;
+    server_name gho.nu *.gho.nu xn--gldhybble-17a.se *.xn--gldhybble-17a.se;
     return 301 https://gho.nu$request_uri;
 }
 
