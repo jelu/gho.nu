@@ -7,6 +7,11 @@ a, a:hover, a:focus {
 .footer {
     margin-top: 21px;
 }
+.footer img {
+    height: 16px;
+    width: 16px;
+    margin-left: 10px;
+}
 @media (min-width:768px) {
     .container {
         width: 750px;
